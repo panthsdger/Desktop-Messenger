@@ -15,18 +15,26 @@ public class Desktop_GUI {
     }
 
     public Desktop_GUI(){
+        //SETTING UP MAIN FRAME
         JFrame guiFrame = new JFrame();
         guiFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         guiFrame.setTitle("generic_gui");
-        guiFrame.setSize(300,250);
+        guiFrame.setSize(800,600);
         guiFrame.setLocationRelativeTo(null);
         guiFrame.setVisible(true);
+        guiFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        JPanel buttonPannel = new JPanel();
-        buttonPannel.setMaximumSize(new Dimension(100, 100));
+
+        
+        
+        // FRAMES ANd BUTTONS FOR CLICKING
+        JPanel buttonPanel = new JPanel();
+        JButton resetButton = new JButton();
         JButton countButton = new JButton();
         countButton.setText(""+addup);
-        buttonPannel.add(countButton);
+        resetButton.setText("Reset Count");
+        buttonPanel.add(countButton);
+        buttonPanel.add(resetButton);
         countButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -34,6 +42,13 @@ public class Desktop_GUI {
                 countButton.setText(""+addup);
             }
         });
-        guiFrame.add(buttonPannel);
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addup = 0;
+                countButton.setText("0");
+            }
+        });
+        guiFrame.add(buttonPanel);
     }
 }
