@@ -1,12 +1,7 @@
- import javax.swing.JFrame;
- import javax.swing.JPanel;
- import javax.swing.JComboBox;
- import javax.swing.JButton;
- import javax.swing.JLabel;
- import javax.swing.JList;
- import java.awt.*;
- import java.awt.event.ActionListener;
- import java.awt.event.ActionEvent;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class Desktop_GUI extends JFrame{
 
@@ -40,7 +35,6 @@ public class Desktop_GUI extends JFrame{
     }
 
 
-
     private JPanel chatter(Dimension sizeScale){
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -51,13 +45,21 @@ public class Desktop_GUI extends JFrame{
         chatroom.setPreferredSize(sizeScale);
         chatroom.setLocation(300, 300);
 
-        JTextArea textArea = new JTextArea("text area");
-        JTextField textField = new JTextField("text field");
+        JLabel chatBubble = new JLabel("      ");
+        JTextArea textArea = new JTextArea("asdasdf area");
+        JButton submitButton = new JButton("Submit");
 
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                chatBubble.setText(textArea.getText());
+            }
+        });
+        chatroom.add(submitButton, gbc);
+        chatroom.add(chatBubble, gbc);
         chatroom.add(textArea, gbc);
-        chatroom.add(textField, gbc);
 
-        
+
         return chatroom;
     }
 
@@ -69,5 +71,3 @@ public class Desktop_GUI extends JFrame{
         return mainPanel;
     }
 }
-
-
