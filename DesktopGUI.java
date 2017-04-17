@@ -37,7 +37,10 @@ public class Desktop_GUI extends JFrame{
 
     private JPanel chatter(Dimension sizeScale){
 
-        JPanel chatroom = new JPanel();
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(15,15,15,15);
+
+        JPanel chatroom = new JPanel(new GridBagLayout());
 
         chatroom.setPreferredSize(sizeScale);
         chatroom.setLocation(300, 300);
@@ -52,9 +55,15 @@ public class Desktop_GUI extends JFrame{
                 chatBubble.setText(textArea.getText());
             }
         });
-        chatroom.add(submitButton);
-        chatroom.add(chatBubble);
-        chatroom.add(textArea);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        chatroom.add(submitButton, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        chatroom.add(chatBubble  , gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        chatroom.add(textArea    , gbc);
 
 
         return chatroom;
@@ -62,7 +71,7 @@ public class Desktop_GUI extends JFrame{
 
 
     private JPanel mainPanel(Dimension frame){
-        JPanel mainPanel = new JPanel();
+        JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.add(chatter(frame));
         return mainPanel;
     }
