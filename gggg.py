@@ -1,3 +1,5 @@
+#ALL BIGENDS ARE TRANSFERED TO ENDIAN
+
 import dissect.formats.inet as ds_inet
 from vstruct2.types import *
 
@@ -78,10 +80,10 @@ class PCAPNG_GENERIC_BLOCK_HEADER(VStruct):
     Used to read the block type & size when parsing the file
     '''
 
-    def __init__(self): #endian in constr
+    def __init__(self, endian = 'little'): #COMPLETED
         VStruct.__init__(self)
-        self._vs_endian = 'big'
-        self.blocktype = uint32()#ENDIAN
+        self._vs_endian = endian
+        self.blocktype = uint32()
         self.blocksize = uint32()
 
 
@@ -91,10 +93,10 @@ class PCAPNG_BLOCK_PARENT(VStruct):
     options at the end, followed by the duplicate block total length
     '''
 
-    def __init__(self, endian=False): #endian in constr
+    def __init__(self, endian='little'): #COMPLETED
         VStruct.__init__(self)
         # non-vstruct field, set during checking BOM
-        self.endian = False #REPLACE
+        self.endian = endian
 
     def vsParse(self, bytez, offset=0, writeback=False):   ###### POSSIBLE TO REPLACE?
         self._vs_endian = 'big'
@@ -118,10 +120,10 @@ class PCAPNG_BLOCK_PARENT(VStruct):
 
 
 class PCAPNG_SECTION_HEADER_BLOCK(PCAPNG_BLOCK_PARENT):
-    def __init__(self):  #REPLACE
-        self._vs_endian = 'big'
+    def __init__(self, bigend = 'little'):  #COMPLETED
         PCAPNG_BLOCK_PARENT.__init__(self)
-        self.blocktype = uint32()#ENDIAN
+        self._vs_endian = bigend
+        self.blocktype = uint32()
         self.blocksize = uint32()
         self.bom = uint32()
         self.vers_maj = uint16()
@@ -140,22 +142,22 @@ class PCAPNG_SECTION_HEADER_BLOCK(PCAPNG_BLOCK_PARENT):
 
 
 class PCAPNG_OPTION(VStruct):  #POSSIBLE COMPLETION
-    def __init__(self):
+    def __init__(self, endian = 'little'):
         VStruct.__init__(self)
-        self._vs_endian = 'big'
+        self._vs_endian = endian
         self.code = uint16()
         self.optsize = uint16()
         self.bytes = bytes(0)
 
     def pcb_optsize(self):
-        size = pad4bytes(self.vsSize())  #                                #size = pad4bytes(self.optsize)##################
-        self.vsGetField('bytes').vsSetLength(size)  ##################
+        size = pad4bytes(self.optsize())  #  FIND REPLACE FOR OPTSIZE      #size = pad4bytes(self.optsize)##################
+        self.vsGetField('bytes').vsSetLength(size) #REPLACE VSSETLENGTH
 
 
 class PCAPNG_INTERFACE_DESCRIPTION_BLOCK(PCAPNG_BLOCK_PARENT):  #COMPLETED
-    def __init__(self):
+    def __init__(self, endian = 'little'):
         PCAPNG_BLOCK_PARENT.__init__(self)
-        self._vs_endian = 'big'
+        self._vs_endian = endian
         self.blocktype = uint32()
         self.blocksize = uint32()
         self.linktype = uint16()
@@ -188,10 +190,10 @@ class PCAPNG_INTERFACE_DESCRIPTION_BLOCK(PCAPNG_BLOCK_PARENT):  #COMPLETED
 
 
 class PCAPNG_ENHANCED_PACKET_BLOCK(PCAPNG_BLOCK_PARENT): #COMPLETED
-    def __init__(self):
+    def __init__(self, endian = 'little'):
         PCAPNG_BLOCK_PARENT.__init__(self)
-        self._vs_endian = 'big'
-        self.blocktype = uint32() #ENDIAN
+        self._vs_endian = endian
+        self.blocktype = uint32()
         self.blocksize = uint32()
         self.interfaceid = uint32()
         self.tstamphi = uint32()
@@ -203,15 +205,15 @@ class PCAPNG_ENHANCED_PACKET_BLOCK(PCAPNG_BLOCK_PARENT): #COMPLETED
 
 
     def pcb_caplen(self): #REPLACE
-        size = pad4bytes(self.caplen.vsSize())
-        self.vsGetField('data').vsSetLength(size)
+        size = pad4bytes(self.caplen.vsSize())#REPLACE VSSIZE
+        self.vsGetField('data').vsSetLength(size)#REPLACE VSSETLENGTH AND VSGETFIELD
 
-    def setPcapTimestamp(self, idb):
+    def setPcapTimestamp(self, idb):#REPLACE
         '''
         Adds a libpcap compatible tvsec and tvusec fields, based on the pcapng timestamp
         '''
         # orange left off here
-        self.snaplen = idb.snaplen
+        self.snaplen = idb.snaplen #CHECK SNAPLEN VALIDITY
 
         tstamp = (self.tstamphi << 32) | self.tstamplow
         scale = 1000000
@@ -234,9 +236,9 @@ class PCAPNG_SIMPLE_PACKET_BLOCK(VStruct):
     Note: no variable length options fields, so inheriting from vstruct directly
     '''
 
-    def __init__(self,): #COMPLETED
+    def __init__(self,endian = 'little'): #COMPLETED
         VStruct.__init__(self)
-        self._vs_endian = 'big'
+        self._vs_endian = endian
         self.blocktype = uint32()
         self.blocksize = uint32()
         self.packetlen = uint32()
@@ -245,7 +247,7 @@ class PCAPNG_SIMPLE_PACKET_BLOCK(VStruct):
 
     def pcb_blocksize(self):
         self.caplen = pad4bytes(self.blocksize - 16)#REPLACE
-        self.vsGetField('data').vsSetLength(self.caplen)
+        self.vsGetField('data').vsSetLength(self.caplen)#REPLACE
 
     def setPcapTimestamp(self, idb): #REPLACE
         # no timestamp in this type of block :(
@@ -253,7 +255,7 @@ class PCAPNG_SIMPLE_PACKET_BLOCK(VStruct):
         self.tvusec = 0
 
 
-def iterPcapFileName(filename, reuse=False):  #REPLACE
+def iterPcapFileName(filename, reuse=False):  #REPLACE reuse
     fd = open(filename, 'rb')
     for x in iterPcapFile(fd, reuse=reuse):
         yield x
@@ -393,7 +395,7 @@ def _iterPcapNgFile(fd, reuse=False):
     ifaceidx = 0
     ifacedict = {}
     roff = 0
-    endian = False
+    endian = 'little'
     curroff = fd.tell()
     b0 = fd.read(len(header))
     fd.seek(curroff)
@@ -401,20 +403,20 @@ def _iterPcapNgFile(fd, reuse=False):
         header.vsParse(b0, writeback=True)
         body = fd.read(header.blocksize)
         if header.blocktype == PCAPNG_BLOCKTYPE_SECTION_HEADER:
-            shb = PCAPNG_SECTION_HEADER_BLOCK()
+            shb = PCAPNG_SECTION_HEADER_BLOCK(endian)
             roff = shb.vsParse(body)
             endian = shb.endian
             # reset interface stuff since we're in a new section
             ifaceidx = 0
             ifacedict = {}
         elif header.blocktype == PCAPNG_BLOCKTYPE_INTERFACE_DESCRIPTION:
-            idb = PCAPNG_INTERFACE_DESCRIPTION_BLOCK()
+            idb = PCAPNG_INTERFACE_DESCRIPTION_BLOCK(endian)
             roff = idb.vsParse(body)
             # save off the interface for later reference
             ifacedict[ifaceidx] = idb
             ifaceidx += 1
         elif header.blocktype == PCAPNG_BLOCKTYPE_SIMPLE_PACKET:
-            epb = PCAPNG_ENHANCED_PACKET_BLOCK()
+            epb = PCAPNG_ENHANCED_PACKET_BLOCK(endian)
             iface = ifacedict.get(epb.interfaceid)
             spb = PCAPNG_SIMPLE_PACKET_BLOCK()
             roff = spb.vsParse(body)
